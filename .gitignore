@@ -1,0 +1,29 @@
+check-typescript.js
+output.txt
+# Node.js
+node_modules/
+
+# Typescript compiled output
+/dist/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.code-workspace
+
+# Environment variables
+.env
+
+# Logs
+logs
+*.log
+
+# Dependency directories
+package-lock.json
+yarn.lock
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
