@@ -1,0 +1,45 @@
+name: Check Removed Interfaces, Types, and Export Declarations
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  check-types:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run TypeScript check
+        run: |
+          npm run check-types -- --noEmit
+
+      - name: Compare with master
+        run: |
+          git fetch origin master
+          git diff --name-status origin/master...HEAD -- index.d.ts > changes.txt
+          echo "::set-output name=changedFiles::$(cat changes.txt)"
+      
+      - name: Check for removed interfaces, types, and exports
+        run: |
+          removed=$(grep -E "^D\s+index\.d\.ts" changes.txt | cut -f2)
+          if [ -n "$removed" ]; then
+            echo "Error: Removed interfaces, types, or export declarations detected in index.d.ts!"
+            echo "Fully qualified names of removed declarations:"
+            while IFS= read -r line; do
+              name=$(grep -E "^export\s+(interface|type|function|const|let|class)\s+$line\b" index.d.ts)
+              echo "- $name"
+            done <<< "$removed"
+            exit 1
+          fi
