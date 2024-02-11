@@ -21,10 +21,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Compare with master
+      - name: Compare with main
         run: |
-          git fetch origin master
-          git diff --name-status origin/master...HEAD -- index.d.ts > changes.txt
+          git fetch origin main
+          git diff --name-status origin/main...HEAD -- index.d.ts > changes.txt
           echo "::set-output name=changedFiles::$(cat changes.txt)"
       
       - name: Check for removed interfaces, types, and exports
