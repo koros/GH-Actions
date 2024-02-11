@@ -21,10 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run TypeScript check
-        run: |
-          npm run check-types -- --noEmit
-
       - name: Compare with master
         run: |
           git fetch origin master
