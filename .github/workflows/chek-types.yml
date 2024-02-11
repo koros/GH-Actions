@@ -21,9 +21,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Fetch updates
+        run: git fetch origin
+
       - name: Compare with main
         run: |
-          git fetch origin main
           git diff --name-status origin/main...HEAD -- index.d.ts > changes.txt
           echo "::set-output name=changedFiles::$(cat changes.txt)"
       
