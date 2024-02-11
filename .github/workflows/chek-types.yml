@@ -11,35 +11,41 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch complete history
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Fetch updates
-        run: git fetch origin
+      - name: Run TypeScript check
+        run: |
+          npm run check-types -- --noEmit
 
-      - name: Compare with main
+      - name: Fetch updates for main branch
         run: |
-          git diff --name-status origin/main...HEAD -- index.d.ts > changes.txt
-          echo "::set-output name=changedFiles::$(cat changes.txt)"
-      
-      - name: Check for removed interfaces, types, and exports
+          git checkout main
+          git pull origin main
+
+      - name: Compare index.d.ts files
         run: |
-          removed=$(grep -E "^D\s+index\.d\.ts" changes.txt | cut -f2)
-          if [ -n "$removed" ]; then
-            echo "Error: Removed interfaces, types, or export declarations detected in index.d.ts!"
+          # Parse index.d.ts in main branch
+          main_declarations=$(grep -E "^export\s+(interface|type|function|const|let|class)" index.d.ts | cut -d' ' -f2)
+
+          # Parse index.d.ts in current branch
+          current_declarations=$(git show HEAD:index.d.ts | grep -E "^export\s+(interface|type|function|const|let|class)" | cut -d' ' -f2)
+
+          # Compare exported declarations
+          removed_declarations=$(comm -23 <(echo "$main_declarations" | sort) <(echo "$current_declarations" | sort))
+
+          if [ -n "$removed_declarations" ]; then
+            echo "Error: Removed exported declarations detected in index.d.ts!"
             echo "Fully qualified names of removed declarations:"
-            while IFS= read -r line; do
-              name=$(grep -E "^export\s+(interface|type|function|const|let|class)\s+$line\b" index.d.ts)
-              echo "- $name"
-            done <<< "$removed"
+            echo "$removed_declarations"
             exit 1
           fi
