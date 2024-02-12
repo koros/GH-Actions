@@ -28,12 +28,14 @@ jobs:
           node-version: '14'
 
       - name: Install dependencies
+        working-directory: ./current_branch  # Switch working directory to 'current_branch'
         run: npm install
       - name: List files
         run: ls -la
 
       - name: Compile TypeScript code
-        run: npx tsc current_branch/check-typescript.ts
+        working-directory: ./current_branch  # Switch working directory to 'current_branch'
+        run: npx tsc check-typescript.ts
 
       - name: Run TypeScript check
         run: |
