@@ -13,7 +13,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch complete history
+          ref: main  # Checkout the main branch
+          path: main  # Store the contents in a directory named 'main'
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -23,30 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Fetch updates for main branch
+      - name: Compile TypeScript code
+        run: npx tsc check-typescript.ts
+
+      - name: Run TypeScript check
         run: |
-          git checkout main
-          git pull origin main
-
-      - name: Compare index.d.ts files
-        run: |
-          # Parse index.d.ts in main branch
-          main_declarations=$(grep -E "^export\s+(interface|type|function|const|let|class)" index.d.ts | cut -d' ' -f2)
-
-          # Parse index.d.ts in current branch
-          current_declarations=$(git show HEAD:index.d.ts | grep -E "^export\s+(interface|type|function|const|let|class)" | cut -d' ' -f2)
-
-          # Find removed declarations
-          removed_declarations=$(comm -23 <(echo "$main_declarations" | sort) <(echo "$current_declarations" | sort))
-
-          # Find removed interfaces (removed from main but present in current)
-          removed_interfaces=$(comm -13 <(grep -E "^export\s+interface" index.d.ts | cut -d' ' -f2 | sort) <(echo "$current_declarations" | sort))
-
-          if [ -n "$removed_declarations" ] || [ -n "$removed_interfaces" ]; then
-            echo "Error: Removed exported declarations detected in index.d.ts!"
-            echo "Fully qualified names of removed declarations:"
-            echo "$removed_declarations"
-            echo "Removed interfaces:"
-            echo "$removed_interfaces"
-            exit 1
-          fi
+          node check-typescript.js main/index.d.ts index.d.ts
