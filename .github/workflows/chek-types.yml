@@ -10,11 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}  # Checkout the current branch
+          path: current_branch  # Store the contents in a directory named 'current_branch'
+
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           ref: main  # Checkout the main branch
-          path: main  # Store the contents in a directory named 'main'
+          path: main_branch  # Store the contents in a directory named 'main_branch'
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -31,4 +37,4 @@ jobs:
 
       - name: Run TypeScript check
         run: |
-          node check-typescript.js main/index.d.ts index.d.ts
+          node check-typescript.js main_branch/index.d.ts current_branch/index.d.ts
