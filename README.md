@@ -1,4 +1,4 @@
-# TypeScript Declaration Checker
+# TypeScript Declarations Checker
 
 This script compares exported declarations between two TypeScript files, typically a legacy file and a current file. It helps identify any declarations that have been removed from the current file compared to the legacy file.
 
