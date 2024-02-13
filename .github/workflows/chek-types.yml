@@ -19,6 +19,9 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v4
         with:
+          sparse-checkout: | # checkout only index.d.ts file
+            index.d.ts 
+          sparse-checkout-cone-mode: false
           ref: main  # Checkout the main branch
           path: main_branch  # Store the contents in a directory named 'main_branch'
 
@@ -35,8 +38,8 @@ jobs:
 
       - name: Compile TypeScript code
         working-directory: ./current_branch  # Switch working directory to 'current_branch'
-        run: npx tsc check-typescript.ts
+        run: npx tsc check-modules.ts
 
       - name: Run TypeScript check
         run: |
-          node current_branch/check-typescript.js main_branch/index.d.ts current_branch/index.d.ts
+          node current_branch/check-modules.js --current-file-path index.d.ts --legacy-file-path main/index.d.ts

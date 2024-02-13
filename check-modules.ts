@@ -1,7 +1,12 @@
 import * as ts from "typescript";
 import * as fs from "fs";
 
-function parseFile(fileName: string) : Set<string> {
+/**
+ * Parses a TypeScript file to extract exported declarations.
+ * @param {string} fileName - The path to the TypeScript file.
+ * @returns {Set<string>} - A set of exported declarations.
+ */
+function parseFile(fileName: string): Set<string> {
     console.log(`==============================================================`);
     console.log(`                Parsing ${fileName}`);
     console.log(`==============================================================`);
@@ -57,56 +62,105 @@ function parseFile(fileName: string) : Set<string> {
 
     ts.forEachChild(sourceFile!, visit);
 
-    //console.log("Fully qualified interfaces and types:", declarations);
     return declarations;
 }
 
-function compareDeclarations(mainDeclarations: Set<string>, currentDeclarations: Set<string>): void {
+/**
+ * Compares declarations between legacy and current TypeScript files and reports any deletions.
+ * @param {Set<string>} legacyDeclarations - Set of declarations from the legacy TypeScript file.
+ * @param {Set<string>} currentDeclarations - Set of declarations from the current TypeScript file.
+ */
+function compareDeclarations(legacyDeclarations: Set<string>, currentDeclarations: Set<string>): void {
     const removedDeclarations: string[] = [];
-    mainDeclarations.forEach(declaration => {
+    legacyDeclarations.forEach(declaration => {
         if (!currentDeclarations.has(declaration)) {
             removedDeclarations.push(declaration);
         }
     });
 
     if (removedDeclarations.length > 0) {
-        console.error('Error: Removed exported declarations detected in index.d.ts!');
+        console.error(`===================================================================================`);
+        console.error(`ERROR: Removed exported declarations detected in ${argv.currentFilePath}!`);
         console.error('The following declarations were removed:');
-        removedDeclarations.forEach(declaration => console.error('-', declaration));
+        removedDeclarations.forEach(declaration => console.error('    -- ', declaration));
+        console.error(`===================================================================================`);
         process.exit(1);
     }
 }
 
-function checkTypescriptFile(mainBranchFileName: string, currentBranchFileName: string) {
-    ensureFileExist(mainBranchFileName);
-    ensureFileExist(mainBranchFileName);
-    const mainDeclarations = parseFile(mainBranchFileName);
-    const currentDeclarations = parseFile(currentBranchFileName);
-    compareDeclarations(mainDeclarations, currentDeclarations);
-}
-
-function ensureFileExist(fileName: string): void {
+/**
+ * Checks if a file exists, throwing an error if it does not.
+ * @param {string} fileName - The path to the file to check.
+ */
+function ensureFileExists(fileName: string): void {
     if (!fs.existsSync(fileName)) {
         throwFileNotFoundError(fileName);
     }
 }
 
+/**
+ * Throws a "File not found" error.
+ * @param {string} fileName - The name of the file that was not found.
+ */
 function throwFileNotFoundError(fileName: string): void {
     const fileNotFoundErrorMessage = `File not found: ${fileName}`;
     console.error(fileNotFoundErrorMessage);
-    throw(fileNotFoundErrorMessage);
+    throw new Error(fileNotFoundErrorMessage);
 }
 
-// Accessing command line arguments
-const args = process.argv.slice(2); // The first two elements are 'node' and the path to the script file
+// Define an interface for command line arguments
+interface CommandLineArgs {
+    legacyFilePath: string;
+    currentFilePath: string;
+    // Add more properties if needed for other options
+}
 
-// Check if we have enough arguments
-if (args.length >= 2) {
-    console.log(`Calling checkTypescriptFile with the following arguments`, args[0], args[1]);
-    checkTypescriptFile(args[0], args[1]);
+/**
+ * Parses command line arguments and executes the function to detect any deletions from the legacy file.
+ * @param {CommandLineArgs} args - Command line arguments.
+ */
+function executeCommand(args: CommandLineArgs): void {
+    console.log('Legacy File Path:', args.legacyFilePath);
+    console.log('Current File Path:', args.currentFilePath);
+    checkTypescriptFiles(args.legacyFilePath, args.currentFilePath);
+}
+
+/**
+ * Compares declarations between the legacy and current TypeScript files.
+ * @param {string} legacyFilePath - Path to the legacy TypeScript file.
+ * @param {string} currentFilePath - Path to the current TypeScript file.
+ */
+function checkTypescriptFiles(legacyFilePath: string, currentFilePath: string): void {
+    ensureFileExists(legacyFilePath);
+    ensureFileExists(currentFilePath);
+    const legacyDeclarations = parseFile(legacyFilePath);
+    const currentDeclarations = parseFile(currentFilePath);
+    compareDeclarations(legacyDeclarations, currentDeclarations);
+}
+
+// Import yargs
+const argv: CommandLineArgs = require('yargs')
+    .usage('Usage: node myScript.js --legacy-file-path [value] --current-file-path [value]')
+    .option('legacy-file-path', {
+        alias: 'l',
+        describe: 'Path to the legacy index.d.ts file',
+        demandOption: true,
+        type: 'string'
+    })
+    .option('current-file-path', {
+        alias: 'c',
+        describe: 'Path to the current index.d.ts file',
+        demandOption: true,
+        type: 'string'
+    })
+    .help('h')
+    .alias('h', 'help')
+    .argv;
+
+// Check if required arguments are provided
+if (argv.legacyFilePath && argv.currentFilePath) {
+    executeCommand(argv);
 } else {
-    const usageMessage = `Please provide 2 arguments \n e.g "node checktypescript main/index.d.ts index.d.ts" \n 
-    the first argument is the path to the main index file and the second argument is the path to the current index file`;
-    console.error(usageMessage);
-    process.exit(1);
+    const errorMsg = 'Please provide both --legacy-file-path and --current-file-path.';
+    throw new Error(errorMsg);
 }
