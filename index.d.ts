@@ -63,6 +63,10 @@ declare namespace PetStore {
         shipDate: Date;
     }
 
+    interface UpdateOrderRequest {
+        status: 'placed' | 'approved' | 'delivered';
+    }
+
     // Define methods
     interface PetStoreApi {
         addPet(pet: AddPetRequest): Promise<ApiResponse<Pet>>;
