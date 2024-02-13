@@ -19,9 +19,6 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v4
         with:
-          sparse-checkout: | # checkout only index.d.ts file
-            index.d.ts 
-          sparse-checkout-cone-mode: false
           ref: main  # Checkout the main branch
           path: main_branch  # Store the contents in a directory named 'main_branch'
 
