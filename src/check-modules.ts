@@ -1,5 +1,6 @@
 import * as ts from "typescript";
 import * as fs from "fs";
+import { printBanner } from "./banner/banner";
 
 /**
  * Parses a TypeScript file to extract exported declarations.
@@ -80,7 +81,7 @@ function compareDeclarations(legacyDeclarations: Set<string>, currentDeclaration
 
     if (removedDeclarations.length > 0) {
         console.error(`===================================================================================`);
-        console.error(`ERROR: Removed exported declarations detected in ${argv.currentFilePath}!`);
+        console.error(`ERROR: Removed exported declarations detected in ${argv.currentFile}!`);
         console.error('The following declarations were removed:');
         removedDeclarations.forEach(declaration => console.error('    -- ', declaration));
         console.error(`===================================================================================`);
@@ -110,8 +111,8 @@ function throwFileNotFoundError(fileName: string): void {
 
 // Define an interface for command line arguments
 interface CommandLineArgs {
-    legacyFilePath: string;
-    currentFilePath: string;
+    legacyFile: string;
+    currentFile: string;
     // Add more properties if needed for other options
 }
 
@@ -120,9 +121,9 @@ interface CommandLineArgs {
  * @param {CommandLineArgs} args - Command line arguments.
  */
 function executeCommand(args: CommandLineArgs): void {
-    console.log('Legacy File Path:', args.legacyFilePath);
-    console.log('Current File Path:', args.currentFilePath);
-    checkTypescriptFiles(args.legacyFilePath, args.currentFilePath);
+    console.log('Legacy File Path:', args.legacyFile);
+    console.log('Current File Path:', args.currentFile);
+    checkTypescriptFiles(args.legacyFile, args.currentFile);
 }
 
 /**
@@ -138,16 +139,18 @@ function checkTypescriptFiles(legacyFilePath: string, currentFilePath: string): 
     compareDeclarations(legacyDeclarations, currentDeclarations);
 }
 
+printBanner();
+
 // Import yargs
 const argv: CommandLineArgs = require('yargs')
-    .usage('Usage: node myScript.js --legacy-file-path [value] --current-file-path [value]')
-    .option('legacy-file-path', {
+    .usage('Usage: node myScript.js --legacy-file [value] --current-file [value]')
+    .option('legacy-file', {
         alias: 'l',
         describe: 'Path to the legacy index.d.ts file',
         demandOption: true,
         type: 'string'
     })
-    .option('current-file-path', {
+    .option('current-file', {
         alias: 'c',
         describe: 'Path to the current index.d.ts file',
         demandOption: true,
@@ -158,9 +161,11 @@ const argv: CommandLineArgs = require('yargs')
     .argv;
 
 // Check if required arguments are provided
-if (argv.legacyFilePath && argv.currentFilePath) {
+if (argv.legacyFile && argv.currentFile) {
     executeCommand(argv);
 } else {
-    const errorMsg = 'Please provide both --legacy-file-path and --current-file-path.';
+    console.log(JSON.stringify(argv));
+    console.log("argv.legacyFilePath: ", argv.legacyFile, " argv.currentFilePath: ", argv.currentFile);
+    const errorMsg = 'Please provide both --legacy-file and --current-file.';
     throw new Error(errorMsg);
 }

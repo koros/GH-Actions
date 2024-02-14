@@ -33,13 +33,12 @@ jobs:
       - name: Install dependencies
         working-directory: ./current_branch  # Switch working directory to 'current_branch'
         run: npm install
-      - name: List files
-        run: ls -la
-
+  
       - name: Compile TypeScript code
         working-directory: ./current_branch  # Switch working directory to 'current_branch'
-        run: npx tsc check-modules.ts
+        run: npm run build
 
       - name: Run TypeScript check
+        working-directory: ./current_branch  # Switch working directory to 'current_branch'
         run: |
-          node current_branch/check-modules.js --current-file-path current_branch/index.d.ts --legacy-file-path main_branch/index.d.ts
+          node dist/check-modules.js --current-file index.d.ts --legacy-file ../main_branch/index.d.ts
