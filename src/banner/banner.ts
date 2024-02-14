@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 // Define the file path
-const filePath = './src/banner/banner.txt';
+const filePath = 'banner.txt';
 
 export function printBanner(): void {
   try {
