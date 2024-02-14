@@ -39,6 +39,5 @@ jobs:
         run: npm run build
 
       - name: Run TypeScript check
-        working-directory: ./current_branch  # Switch working directory to 'current_branch'
         run: |
-          node dist/check-modules.js --current-file index.d.ts --legacy-file ../main_branch/index.d.ts
+          node current_branch/dist/check-modules.js --current-file current_branch/index.d.ts --legacy-file main_branch/index.d.ts
