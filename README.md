@@ -23,14 +23,14 @@ Before running the script, ensure you have the following installed:
 Before running the script, you need to compile the TypeScript code to JavaScript. To do this, run the following command:
 
 ```bash
-  npx tsc check-modules.ts
+  npn run build
 ```
 This will compile the TypeScript code in check-modules.ts to JavaScript and generate the `check-modules.js` file.
 
 ## Usage
 Run the script using the following command:
 ```bash
-node check-modules.js --legacy-file [path/to/legacy/file] --current-file [path/to/current/file]
+node dist/check-modules.js --legacy-file [path/to/legacy/file] --current-file [path/to/current/file]
 ```
 
 ### Usage in a Pipeline Environment
