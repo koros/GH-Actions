@@ -30,7 +30,7 @@ This will compile the TypeScript code in check-modules.ts to JavaScript and gene
 ## Usage
 Run the script using the following command:
 ```bash
-node check-modules.js --legacy-file-path [path/to/legacy/file] --current-file-path [path/to/current/file]
+node check-modules.js --legacy-file [path/to/legacy/file] --current-file [path/to/current/file]
 ```
 
 ### Usage in a Pipeline Environment
@@ -81,7 +81,7 @@ jobs:
 
       - name: Run TypeScript check
         run: |
-          node current_branch/check-modules.js --current-file-path current_branch/index.d.ts --legacy-file-path main_branch/index.d.ts
+          node current_branch/check-modules.js --current-file current_branch/index.d.ts --legacy-file main_branch/index.d.ts
 ```
 
 This configuration checks for removed interfaces, types, and export declarations before merging a pull request into the main branch.
@@ -89,12 +89,12 @@ This configuration checks for removed interfaces, types, and export declarations
 Replace [path/to/legacy/file] and [path/to/current/file] with the paths to your legacy and current TypeScript files, respectively.
 
 ## Command Line Options
-- `--legacy-file-path` or `-l`: Path to the legacy TypeScript file containing the original declarations.
-- `--current-file-path` or `-c`: Path to the current TypeScript file to compare against the legacy file.
+- `--legacy-file` or `-l`: Path to the legacy TypeScript file containing the original declarations.
+- `--current-file` or `-c`: Path to the current TypeScript file to compare against the legacy file.
 
 ## Example
 ```bash
-node check-modules.js --legacy-file-path legacy/index.d.ts --current-file-path src/index.d.ts
+node check-modules.js --legacy-file legacy/index.d.ts --current-file src/index.d.ts
 ```
 
 ## License
