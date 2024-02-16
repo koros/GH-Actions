@@ -46,9 +46,6 @@ jobs:
       - name: Print GITHUB_OUTPUT
         run: cat $GITHUB_OUTPUT
 
-      - name: Debug
-        run: echo "GITHUB_OUTPUT: $GITHUB_OUTPUT"
-
       - name: Run TypeScript check
         id: check-diff
         working-directory: ./current_branch  # Switch working directory to 'current_branch'
