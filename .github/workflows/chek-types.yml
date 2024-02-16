@@ -39,6 +39,12 @@ jobs:
         run: npm run build
 
       - name: Run TypeScript check
+        id: check-diff
         working-directory: ./current_branch  # Switch working directory to 'current_branch'
         run: |
           node dist/check-modules.js --current-file index.d.ts --legacy-file ../main_branch/index.d.ts
+
+      - name: Publish to npm
+        working-directory: ./current_branch  # Switch working directory to 'current_branch'
+        if: steps.check-diff.outputs.new_modules_added == 'true'
+        run: echo "🎉 New modules/declarations were added, publish a new release"
