@@ -45,5 +45,5 @@ jobs:
           node dist/check-modules.js --current-file index.d.ts --legacy-file ../main_branch/index.d.ts
 
       - name: Publish to npm
-        if: steps.check-diff.outputs.new_modules_added == 'true'
+        if: env.GITHUB_OUTPUT == 'new_modules_added=true'
         run: echo "🎉 New modules/declarations were added, publish a new release"

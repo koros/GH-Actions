@@ -190,7 +190,7 @@ function checkTypescriptFiles(legacyFilePath: string, currentFilePath: string): 
     }
     
     // Output 'true' if the condition is met, otherwise output 'false'
-    console.log(`::set-output name=new_modules_added::${diff.addedDeclarations.length > 0 ? 'true' : 'false'}`)
+    console.log(`::set-env name=GITHUB_OUTPUT::new_modules_added=${diff.addedDeclarations.length > 0 ? 'true' : 'false'}`);
 }
 
 printBanner();
