@@ -63,10 +63,6 @@ declare namespace PetStore {
         shipDate: Date;
     }
 
-    interface CancelOrderRequest {
-        petId: number;
-    }
-
     interface UpdateOrderRequest {
         status: 'placed' | 'approved' | 'delivered';
     }
