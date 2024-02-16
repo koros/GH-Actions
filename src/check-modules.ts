@@ -2,6 +2,18 @@ import * as ts from "typescript";
 import * as fs from "fs";
 import { printBanner } from "./banner/banner";
 
+export interface ModulesDiff {
+    removedDeclarations: string[],
+    addedDeclarations: string[],
+}
+
+// Define an interface for command line arguments
+interface CommandLineArgs {
+    legacyFile: string;
+    currentFile: string;
+    // Add more properties if needed for other options
+}
+
 /**
  * Parses a TypeScript file to extract exported declarations.
  * @param {string} fileName - The path to the TypeScript file.
@@ -67,26 +79,57 @@ function parseFile(fileName: string): Set<string> {
 }
 
 /**
- * Compares declarations between legacy and current TypeScript files and reports any deletions.
+ * Compares declarations between legacy and current TypeScript files and reports any deletions and additions.
  * @param {Set<string>} legacyDeclarations - Set of declarations from the legacy TypeScript file.
  * @param {Set<string>} currentDeclarations - Set of declarations from the current TypeScript file.
  */
-function compareDeclarations(legacyDeclarations: Set<string>, currentDeclarations: Set<string>): void {
-    const removedDeclarations: string[] = [];
+ function compareDeclarations(legacyDeclarations: Set<string>, currentDeclarations: Set<string>): ModulesDiff {
+    const diff: ModulesDiff = ({
+        removedDeclarations: [],
+        addedDeclarations: []
+    });
+    // const removedDeclarations: string[] = [];
+    // const addedDeclarations: string[] = [];
+
+    // Check for removed declarations
     legacyDeclarations.forEach(declaration => {
         if (!currentDeclarations.has(declaration)) {
-            removedDeclarations.push(declaration);
+            diff.removedDeclarations.push(declaration);
         }
     });
 
-    if (removedDeclarations.length > 0) {
-        console.error(`===================================================================================`);
-        console.error(`ERROR: Removed exported declarations detected in ${argv.currentFile}!`);
-        console.error('The following declarations were removed:');
-        removedDeclarations.forEach(declaration => console.error('    -- ', declaration));
-        console.error(`===================================================================================`);
-        process.exit(1);
+    // Check for added declarations
+    currentDeclarations.forEach(declaration => {
+        if (!legacyDeclarations.has(declaration)) {
+            diff.addedDeclarations.push(declaration);
+        }
+    });
+
+    return diff;
+}
+
+// if some declarations have been deleted print them
+function printDeletedDeclarations(removedDeclarations: string[]): void {
+    // throw an error if some declarations were deleted
+    if (removedDeclarations.length > 0 ) {
+        console.error(`----------------------------------------------------------------------------------`);
+        console.error(`ERROR: Changes detected in ${argv.currentFile}!`);
+        if (removedDeclarations.length > 0) {
+            console.error('The following declarations were removed:');
+            removedDeclarations.forEach(declaration => console.error('  -  ', declaration));
+        }
+        console.error(`----------------------------------------------------------------------------------`);
     }
+}
+
+// if some modules were added print them
+function printAddedDeclarations(addedDeclarations: string[]) : void {
+    console.error(`++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++`);
+    if (addedDeclarations.length > 0) {
+        console.log('The following declarations were added:');
+        addedDeclarations.forEach(declaration => console.error('  +  ', declaration));
+    }
+    console.error(`++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++`);
 }
 
 /**
@@ -109,13 +152,6 @@ function throwFileNotFoundError(fileName: string): void {
     throw new Error(fileNotFoundErrorMessage);
 }
 
-// Define an interface for command line arguments
-interface CommandLineArgs {
-    legacyFile: string;
-    currentFile: string;
-    // Add more properties if needed for other options
-}
-
 /**
  * Parses command line arguments and executes the function to detect any deletions from the legacy file.
  * @param {CommandLineArgs} args - Command line arguments.
@@ -136,7 +172,22 @@ function checkTypescriptFiles(legacyFilePath: string, currentFilePath: string): 
     ensureFileExists(currentFilePath);
     const legacyDeclarations = parseFile(legacyFilePath);
     const currentDeclarations = parseFile(currentFilePath);
-    compareDeclarations(legacyDeclarations, currentDeclarations);
+    const diff = compareDeclarations(legacyDeclarations, currentDeclarations);
+
+    if(diff.removedDeclarations.length > 0) {
+        printDeletedDeclarations(diff.removedDeclarations);
+        process.exit(1); // Exit with Error code
+    }
+
+    // if new modules added exit with success and prepare new npm release
+    if(diff.addedDeclarations.length > 0) {
+        printAddedDeclarations(diff.addedDeclarations);
+        process.exit(0); // Exit with success code
+    }
+
+    // No diff detected
+    console.log(`No changes we detected`);
+    process.exit(78); // Exit with neutral code
 }
 
 printBanner();
