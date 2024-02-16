@@ -182,12 +182,15 @@ function checkTypescriptFiles(legacyFilePath: string, currentFilePath: string): 
     // if new modules added exit with success and prepare new npm release
     if(diff.addedDeclarations.length > 0) {
         printAddedDeclarations(diff.addedDeclarations);
-        process.exit(0); // Exit with success code
     }
 
     // No diff detected
-    console.log(`No changes we detected`);
-    process.exit(78); // Exit with neutral code
+    if(diff.addedDeclarations.length == 0 && diff.removedDeclarations.length == 0) {
+        console.log(`No changes we detected`);
+    }
+    
+    // Output 'true' if the condition is met, otherwise output 'false'
+    console.log(`::set-output name=new_modules_added::${diff.addedDeclarations.length > 0 ? 'true' : 'false'}`)
 }
 
 printBanner();
