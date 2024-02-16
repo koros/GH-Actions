@@ -189,8 +189,13 @@ function checkTypescriptFiles(legacyFilePath: string, currentFilePath: string): 
         console.log(`No changes we detected`);
     }
     
-    // Output 'true' if the condition is met, otherwise output 'false'
-    console.log(`::set-env name=GITHUB_OUTPUT::new_modules_added=${diff.addedDeclarations.length > 0 ? 'true' : 'false'}`);
+    appendToGithubOtputFile("new_modules_added", diff.addedDeclarations.length > 0 ? "true" : "false");
+}
+
+function appendToGithubOtputFile(name: string, value: any): void {
+    if (process.env.GITHUB_OUTPUT) {
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`, { encoding: 'utf8' });
+    }
 }
 
 printBanner();
