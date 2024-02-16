@@ -193,7 +193,9 @@ function checkTypescriptFiles(legacyFilePath: string, currentFilePath: string): 
 }
 
 function appendToGithubOtputFile(name: string, value: any): void {
+    console.log(`appendToGithubOtputFile()`);
     if (process.env.GITHUB_OUTPUT) {
+        console.log(`Apending ${name}=${value} to output file`);
         fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`, { encoding: 'utf8' });
     }
 }
