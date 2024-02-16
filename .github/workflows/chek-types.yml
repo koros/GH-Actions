@@ -38,14 +38,6 @@ jobs:
         working-directory: ./current_branch  # Switch working directory to 'current_branch'
         run: npm run build
 
-      - name: Set GITHUB_OUTPUT file
-        working-directory: ./current_branch  # Switch working directory to 'current_branch'
-        run: echo "" > $GITHUB_ENV
-        shell: bash
-
-      - name: Print GITHUB_OUTPUT
-        run: cat $GITHUB_OUTPUT
-
       - name: Run TypeScript check
         id: check-diff
         working-directory: ./current_branch  # Switch working directory to 'current_branch'
@@ -54,5 +46,5 @@ jobs:
 
       - name: Publish to npm
         working-directory: ./current_branch  # Switch working directory to 'current_branch'
-        if: env.GITHUB_OUTPUT == 'new_modules_added=true'
+        if: steps.check-diff.outputs.new_modules_added == 'true'
         run: echo "🎉 New modules/declarations were added, publish a new release"
